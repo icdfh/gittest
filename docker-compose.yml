@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: bookforpeople-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: bookforpeople
+      MYSQL_USER: root
+      MYSQL_PASSWORD: dbpassword
+    ports:
+      - "3307:3306" # Changed the host port to 3307
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bookforpeople-app
+    depends_on:
+      - mysql
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/bookforpeople
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: dbpassword
+    ports:
+      - "8081:8080" # Changed the host port to 8081
+    volumes:
+      - ./your-app:/app
+    command: ./wait-for-it.sh mysql:3306 -- java -jar app.jar
+
+volumes:
+  mysql_data:
